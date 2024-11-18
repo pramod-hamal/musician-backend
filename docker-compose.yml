@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+  # MySQL service
+  mysql:
+    image: mysql:8.3
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: musicians
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+    ports:
+      - 3306:3306                     
+  
+  # phpMyAdmin service
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - 8080:80                          
+    environment:
+      - PMA_HOST=mysql                 
+      - PMA_PORT=3306
