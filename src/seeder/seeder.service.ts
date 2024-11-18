@@ -26,16 +26,26 @@ export class SeederService {
                 phone VARCHAR(255),
                 dob DATETIME,
                 gender ENUM('male', 'female', 'others'),
+                role ENUM('super_admin', 'artist_manager', 'artist') DEFAULT 'artist',
                 address VARCHAR(255),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);`;
         await this.connection.query(createTableQuery);
+
         this.logger.log('Users table created successfully');
       } else {
         this.logger.log('Users table already exists');
       }
+
+      await this.connection.query('INSERT IGNORE INTO users SET ?', {
+        first_name: 'Pramod',
+        last_name: 'Hamal',
+        email: 'superadmin@gmail.com',
+        password: 'password',
+        role: 'super_admin',
+      });
     } catch (error) {
-      this.logger.log('Table already exists');
+      this.logger.error('Error seeding users table', error.stack);
     }
   }
 
