@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Connection } from 'mysql2/promise';
-
+import * as bcrypt from 'bcrypt';
 @Injectable()
 export class SeederService {
   private readonly logger = new Logger(SeederService.name);
@@ -36,12 +36,12 @@ export class SeederService {
       } else {
         this.logger.log('Users table already exists');
       }
-
+      const password = await bcrypt.hash('password', 12);
       await this.connection.query('INSERT IGNORE INTO users SET ?', {
         first_name: 'Pramod',
         last_name: 'Hamal',
         email: 'superadmin@gmail.com',
-        password: 'password',
+        password: password,
         role: 'super_admin',
       });
     } catch (error) {

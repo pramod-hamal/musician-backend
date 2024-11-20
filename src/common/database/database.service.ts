@@ -1,14 +1,14 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { createConnection, Connection } from 'mysql2/promise';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Connection, createConnection } from 'mysql2/promise';
 import { SeederService } from 'src/seeder/seeder.service';
 
 @Injectable()
-export class DatabaseService {
+export class DatabaseService implements OnModuleInit {
   private connection: Connection;
   private readonly logger = new Logger(DatabaseService.name);
 
-  constructor() {
-    this.connect();
+  async onModuleInit() {
+    await this.connect();
   }
 
   private async connect() {
@@ -35,6 +35,9 @@ export class DatabaseService {
   }
 
   getConnection(): Connection {
+    if (!this.connection) {
+      throw new Error('Connection not established');
+    }
     return this.connection;
   }
 }
