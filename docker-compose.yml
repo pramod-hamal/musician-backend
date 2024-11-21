@@ -1,6 +1,5 @@
 version: '3.8'
 services:
-  # MySQL service
   mysql:
     image: mysql:8.3
     restart: always
@@ -10,9 +9,7 @@ services:
       MYSQL_USER: admin
       MYSQL_PASSWORD: admin
     ports:
-      - 3306:3306                     
-  
-  # phpMyAdmin service
+      - 3306:3306
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     ports:
@@ -20,3 +17,20 @@ services:
     environment:
       - PMA_HOST=mysql                 
       - PMA_PORT=3306
+  redis:
+    image: redis:latest
+    container_name: redis_container
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: [ "redis-server", "--appendonly", "yes" ]
+
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: redis_insight
+    ports:
+      - "5540:5540"
+
+volumes:
+  redis_data:

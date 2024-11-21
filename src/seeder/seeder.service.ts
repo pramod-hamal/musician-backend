@@ -49,7 +49,40 @@ export class SeederService {
     }
   }
 
+  async seedMusic() {
+    const tableCheckQuery = `
+    SELECT COUNT(*)
+    FROM information_schema.tables
+    WHERE table_schema = 'musicians' AND table_name = 'music';
+  `;
+    try {
+      const [result] = await this.connection.query(tableCheckQuery);
+
+      const tableExists = result[0]['COUNT(*)'] > 0;
+
+      if (!tableExists) {
+        const createTableQuery = `
+        CREATE TABLE music (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          user_id INT NOT NULL,
+          title VARCHAR(255) NOT NULL,
+          album_name VARCHAR(255),
+          genre ENUM('RnB', 'Country', 'Classic', 'Jazz', 'Rock') NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        );
+      `;
+        await this.connection.query(createTableQuery);
+        this.logger.log('Music table created successfully');
+      }
+    } catch (err) {
+      this.logger.error('Error seeding music table', err.stack);
+    }
+  }
+
   async seed() {
     await this.seedUsers();
+    await this.seedMusic();
   }
 }

@@ -1,5 +1,13 @@
 import { Type } from 'class-transformer';
-import { IsDate, IsEmail, IsNotEmpty, IsStrongPassword } from 'class-validator';
+import {
+  IsDate,
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsStrongPassword,
+} from 'class-validator';
+import { UserRoleEnum } from '../entities/user.entity';
 
 export class CreateUserDto {
   @IsNotEmpty()
@@ -23,4 +31,8 @@ export class CreateUserDto {
   @IsDate()
   @Type(() => Date)
   dob: string;
+
+  @IsOptional()
+  @IsEnum(UserRoleEnum)
+  role: UserRoleEnum;
 }
