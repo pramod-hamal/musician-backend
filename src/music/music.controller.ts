@@ -37,6 +37,11 @@ export class MusicController {
   }
 
   @Get()
+  @Roles(
+    UserRoleEnum.ARTIST,
+    UserRoleEnum.ARTIST_MANAGER,
+    UserRoleEnum.SUPER_ADMIN,
+  )
   async findAll(@LoggedInUser() user: UserEntity, @Query() query: any) {
     return ApiResponse.pagination(
       await this.musicService.findAll(user, query),

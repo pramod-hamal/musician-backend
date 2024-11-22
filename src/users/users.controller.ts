@@ -27,6 +27,7 @@ import { UserEntity, UserRoleEnum } from './entities/user.entity';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from 'src/guard/auth.guard';
 import { RolesGuard } from 'src/guard/role.guard';
+import AppException from 'src/common/error/app.exception';
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
@@ -36,11 +37,21 @@ export class UsersController {
   ) {}
 
   @Post()
-  async create(@Body() createUserDto: CreateUserDto) {
+  @Roles(UserRoleEnum.SUPER_ADMIN, UserRoleEnum.ARTIST_MANAGER)
+  async create(
+    @Body() createUserDto: CreateUserDto,
+    @LoggedInUser() user: UserEntity,
+  ) {
+    if (
+      user.role === UserRoleEnum.ARTIST_MANAGER &&
+      createUserDto.role !== UserRoleEnum.ARTIST
+    )
+      throw new AppException({}, 'Only Artist Manager can create Artist', 403);
     return ApiResponse.success(await this.usersService.create(createUserDto));
   }
 
   @Get()
+  @Roles(UserRoleEnum.SUPER_ADMIN)
   async findAll(@Query() query: any) {
     return ApiResponse.pagination(
       (await this.usersService.findAll(query)) as IPaginationData,
@@ -49,6 +60,7 @@ export class UsersController {
   }
 
   @Get('/artists')
+  @Roles(UserRoleEnum.SUPER_ADMIN, UserRoleEnum.ARTIST_MANAGER)
   async findArtists(@Query() query: any, @LoggedInUser() user: UserEntity) {
     return ApiResponse.pagination(
       (await this.usersService.findArtists(user, query)) as IPaginationData,
@@ -57,12 +69,14 @@ export class UsersController {
   }
 
   @Post('/import/artists')
+  @Roles(UserRoleEnum.SUPER_ADMIN, UserRoleEnum.ARTIST_MANAGER)
   @UseInterceptors(FileInterceptor('file'))
   async importArtists(@UploadedFile() file: Express.Multer.File) {
     await this.artistCsvService.importCsv(file.buffer);
     return ApiResponse.success('Artist Imported successfully');
   }
   @Get('/export/artists')
+  @Roles(UserRoleEnum.SUPER_ADMIN, UserRoleEnum.ARTIST_MANAGER)
   async exportArtists(@Res({ passthrough: true }) res: Response) {
     const filePath = await this.artistCsvService.exportCsv();
     const file = createReadStream(filePath);
@@ -84,6 +98,7 @@ export class UsersController {
   }
 
   @Patch(':id')
+  @Roles(UserRoleEnum.ARTIST_MANAGER, UserRoleEnum.SUPER_ADMIN)
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return ApiResponse.success(
       await this.usersService.update(+id, updateUserDto),
@@ -91,7 +106,7 @@ export class UsersController {
   }
 
   @Delete(':id')
-  @Roles(UserRoleEnum.SUPER_ADMIN)
+  @Roles(UserRoleEnum.ARTIST_MANAGER, UserRoleEnum.SUPER_ADMIN)
   async remove(@Param('id') id: string) {
     return ApiResponse.success(await this.usersService.remove(+id));
   }
