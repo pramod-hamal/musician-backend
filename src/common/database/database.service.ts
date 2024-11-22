@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { Connection, createConnection } from 'mysql2/promise';
+import { Connection, createPool } from 'mysql2/promise';
 import { SeederService } from 'src/seeder/seeder.service';
 
 @Injectable()
@@ -13,14 +13,14 @@ export class DatabaseService implements OnModuleInit {
 
   private async connect() {
     try {
-      const initConnection = await createConnection({
+      const initConnection = createPool({
         host: 'localhost',
         user: 'root',
         password: 'admin',
       });
 
       await initConnection.query('CREATE DATABASE IF NOT EXISTS musicians');
-      this.connection = await createConnection({
+      this.connection = createPool({
         host: 'localhost',
         user: 'root',
         password: 'admin',

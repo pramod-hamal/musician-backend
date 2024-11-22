@@ -7,25 +7,33 @@ import {
   Patch,
   Post,
   Query,
+  Res,
+  StreamableFile,
   UploadedFile,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Response } from 'express';
+import { createReadStream, unlink } from 'fs';
 import { LoggedInUser } from 'src/common/decorators/logged-in-user.decorator';
 import { Roles } from 'src/common/decorators/role.decorator';
 import { ApiResponse } from 'src/common/response/api-response';
 import { IPaginationData } from 'src/common/response/pagination-data.interface';
-import { JwtAuthGuard } from 'src/guard/auth.guard';
-import { RolesGuard } from 'src/guard/role.guard';
+import { ArtistCsvService } from './csv-module/artist-csv.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserEntity, UserRoleEnum } from './entities/user.entity';
 import { UsersService } from './users.service';
+import { JwtAuthGuard } from 'src/guard/auth.guard';
+import { RolesGuard } from 'src/guard/role.guard';
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly artistCsvService: ArtistCsvService,
+  ) {}
 
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
@@ -51,7 +59,23 @@ export class UsersController {
   @Post('/import/artists')
   @UseInterceptors(FileInterceptor('file'))
   async importArtists(@UploadedFile() file: Express.Multer.File) {
-    return 'llls';
+    await this.artistCsvService.importCsv(file.buffer);
+    return ApiResponse.success('Artist Imported successfully');
+  }
+  @Get('/export/artists')
+  async exportArtists(@Res({ passthrough: true }) res: Response) {
+    const filePath = await this.artistCsvService.exportCsv();
+    const file = createReadStream(filePath);
+    res.set({
+      'Content-Type': 'text/csv',
+      'Content-Disposition': `attachment; filename="artists-${Date.now()}.csv"`,
+    });
+
+    const streamable = new StreamableFile(file);
+    file.on('close', () => {
+      unlink(filePath, () => {});
+    });
+    return streamable;
   }
 
   @Get(':id')

@@ -1,8 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Connection, ResultSetHeader } from 'mysql2/promise';
+import { Connection as StreamConnection } from 'mysql2';
+import { Connection, ResultSetHeader, Pool } from 'mysql2/promise';
+import { Stream } from 'stream';
 import { DatabaseService } from '../database/database.service';
 import { IPaginationData } from '../response/pagination-data.interface';
-
 @Injectable()
 export abstract class GenericRepository<T> {
   private logger = new Logger(GenericRepository.name);
@@ -21,6 +22,33 @@ export abstract class GenericRepository<T> {
     } catch (error) {
       this.logger.error(
         'Failed to get database connection from pool',
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  async findAllAsStream(
+    conditions = {},
+    sort = {
+      created_at: 'DESC',
+    },
+  ): Promise<Stream> {
+    const pool = this.databaseService.getConnection() as unknown as Pool;
+    const whereConditions = this.buildWhereClause(conditions);
+    const orderByClause = this.buildOrderByClause(sort);
+    const query = `SELECT * FROM ?? ${whereConditions.sql} ${orderByClause}`;
+    const conn = await pool.getConnection();
+    const streamConnection = (conn as any).connection as StreamConnection;
+    try {
+      return streamConnection
+        .query(query, [this.tableName, ...whereConditions.values])
+        .stream({
+          objectMode: true,
+        });
+    } catch (error) {
+      this.logger.error(
+        `Error retrieving data from ${this.tableName}`,
         error.stack,
       );
       throw error;
