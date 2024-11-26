@@ -110,4 +110,10 @@ export class UsersController {
   async remove(@Param('id') id: string) {
     return ApiResponse.success(await this.usersService.remove(+id));
   }
+
+  @Get('count')
+  @Roles(UserRoleEnum.SUPER_ADMIN, UserRoleEnum.ARTIST_MANAGER)
+  async count() {
+    return ApiResponse.success(await this.usersService.getTotalCount());
+  }
 }

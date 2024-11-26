@@ -67,4 +67,13 @@ export class UsersService {
       query.limit,
     );
   }
+
+  async getTotalCount() {
+    const users = await this.usersRepository.findAllWithoutPagination();
+    const artists = users.filter((user) => user.role === UserRoleEnum.ARTIST);
+    return {
+      users: users.length,
+      artists: artists.length,
+    };
+  }
 }
