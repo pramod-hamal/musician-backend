@@ -59,6 +59,12 @@ export class UsersController {
     );
   }
 
+  @Get('count')
+  @Roles(UserRoleEnum.SUPER_ADMIN, UserRoleEnum.ARTIST_MANAGER)
+  async count() {
+    return ApiResponse.success(await this.usersService.getTotalCount());
+  }
+
   @Get('/artists')
   @Roles(UserRoleEnum.SUPER_ADMIN, UserRoleEnum.ARTIST_MANAGER)
   async findArtists(@Query() query: any, @LoggedInUser() user: UserEntity) {
@@ -111,9 +117,5 @@ export class UsersController {
     return ApiResponse.success(await this.usersService.remove(+id));
   }
 
-  @Get('count')
-  @Roles(UserRoleEnum.SUPER_ADMIN, UserRoleEnum.ARTIST_MANAGER)
-  async count() {
-    return ApiResponse.success(await this.usersService.getTotalCount());
-  }
+
 }
