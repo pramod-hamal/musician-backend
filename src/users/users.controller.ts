@@ -116,6 +116,4 @@ export class UsersController {
   async remove(@Param('id') id: string) {
     return ApiResponse.success(await this.usersService.remove(+id));
   }
-
-
 }
