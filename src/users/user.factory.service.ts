@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { IPasswordHashService } from 'src/common/password-hash/password-hash.interface';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UserEntity } from './entities/user.entity';
+import { UserEntity, UserGenderEnum } from './entities/user.entity';
 
 @Injectable()
 export class UserFactoryService {
@@ -18,6 +18,7 @@ export class UserFactoryService {
     userEntity.password = await this.hashGenerator.hash(dto.password);
     userEntity.dob = dto.dob;
     userEntity.role = dto.role;
+    userEntity.gender = dto.gender || UserGenderEnum.MALE;
     return userEntity;
   }
 
@@ -32,6 +33,8 @@ export class UserFactoryService {
     if (dto.password)
       userEntity.password = await this.hashGenerator.hash(dto.password);
     if (dto.dob) userEntity.dob = dto.dob;
+    if (dto.role) userEntity.role = dto.role;
+    if (dto.gender) userEntity.gender = dto.gender;
     return userEntity;
   }
 }

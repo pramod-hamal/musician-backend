@@ -7,7 +7,7 @@ import {
   IsOptional,
   IsStrongPassword,
 } from 'class-validator';
-import { UserRoleEnum } from '../entities/user.entity';
+import { UserGenderEnum, UserRoleEnum } from '../entities/user.entity';
 
 export class CreateUserDto {
   @IsNotEmpty()
@@ -35,4 +35,8 @@ export class CreateUserDto {
   @IsOptional()
   @IsEnum(UserRoleEnum)
   role: UserRoleEnum;
+
+  @IsOptional()
+  @IsEnum(UserGenderEnum)
+  gender: UserGenderEnum;
 }

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Connection as StreamConnection } from 'mysql2';
-import { Connection, ResultSetHeader, Pool } from 'mysql2/promise';
+import { Connection, Pool, ResultSetHeader } from 'mysql2/promise';
 import { Stream } from 'stream';
 import { DatabaseService } from '../database/database.service';
 import { IPaginationData } from '../response/pagination-data.interface';
@@ -94,11 +94,25 @@ export abstract class GenericRepository<T> {
     const [countResult]: any = await this.connection.query(countQuery, [
       this.tableName,
     ]);
+
+    if (
+      isNaN(limit) ||
+      isNaN(page) ||
+      isNaN(parseInt(limit.toString())) ||
+      isNaN(parseInt(page.toString()))
+    ) {
+      limit = 10;
+      page = 1;
+    }
+
+    limit = parseInt(limit.toString());
+    page = parseInt(page.toString());
     const total = countResult[0].total;
 
     const offset = (page - 1) * limit;
 
     const orderByClause = this.buildOrderByClause(sort);
+    console.log('orderByClause', limit, offset);
     const query = `SELECT * FROM ?? ${whereConditions.sql} ${orderByClause} LIMIT ? OFFSET ?`;
 
     try {
