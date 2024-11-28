@@ -19,6 +19,7 @@ export class UserFactoryService {
     userEntity.dob = dto.dob;
     userEntity.role = dto.role;
     userEntity.gender = dto.gender || UserGenderEnum.MALE;
+    userEntity.address = dto.address;
     return userEntity;
   }
 
@@ -26,7 +27,6 @@ export class UserFactoryService {
     userEntity: UserEntity,
     dto: UpdateUserDto | CreateUserDto,
   ): Promise<UserEntity> {
-    if (dto.password) userEntity.password = dto.password;
     if (dto.first_name) userEntity.first_name = dto.first_name;
     if (dto.last_name) userEntity.last_name = dto.last_name;
     if (dto.phone) userEntity.phone = dto.phone;
@@ -35,6 +35,7 @@ export class UserFactoryService {
     if (dto.dob) userEntity.dob = dto.dob;
     if (dto.role) userEntity.role = dto.role;
     if (dto.gender) userEntity.gender = dto.gender;
+    if (dto.address) userEntity.address = dto.address;
     return userEntity;
   }
 }

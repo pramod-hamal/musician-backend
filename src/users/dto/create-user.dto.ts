@@ -39,4 +39,7 @@ export class CreateUserDto {
   @IsOptional()
   @IsEnum(UserGenderEnum)
   gender: UserGenderEnum;
+
+  @IsOptional()
+  address: string;
 }

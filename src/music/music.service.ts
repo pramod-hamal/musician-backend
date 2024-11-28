@@ -26,7 +26,11 @@ export class MusicService {
       return await this._repository.findAll({ user_id: user.id }, page, limit);
     }
 
-    return await this._repository.findAll({}, page, limit);
+    let condition = {};
+    if (query.artistId && query.artistId != 'undefined') {
+      condition = { user_id: query.artistId };
+    }
+    return await this._repository.findAll(condition, page, limit);
   }
 
   async findOne(id: number) {
